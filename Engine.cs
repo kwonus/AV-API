@@ -15,7 +15,7 @@
 //      private SpecialCharacters special;
         private static string[] elipsis = ["..."];
         private static char[] whitespace = [' ', '\t'];
-        private static string[] directives_or_scopes = ["||", ">", "?>", "::", "<"];
+        private static string[] directives_or_scopes = ["||", ">", "?>", "::", ":=", "<"];
         private API api;
         Engine()
         {
@@ -72,11 +72,13 @@
 
             return payload;
         }
-        public Stream Detail_Find(string format, string spec, string book, string chapter, out string message, bool quoted = false)
+        public Stream Detail_Find(string format, string spec, string book, string chapter, out string message, bool quoted = false, bool context = false)
         {
             string input = string.Empty;
             string[] parts = spec.Split(directives_or_scopes, StringSplitOptions.None);
-            input = parts[0].Trim() + "<" + book + " " + chapter + " :: " + format;
+            string op = context ? " :: " : " := ";
+
+            input = parts[0].Trim() + "<" + book + " " + chapter + op + format;
 
             if (spec.Length > 0 && spec[0] != '@')
             {
