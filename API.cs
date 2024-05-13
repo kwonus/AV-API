@@ -1,6 +1,7 @@
 using Blueprint.Model.Implicit;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Pinshot.Blue;
 using System.Net;
 using static Blueprint.Model.Implicit.QFormat;
 
@@ -79,11 +80,15 @@ namespace AVAPI
 
 
             app.MapGet("/{book}/{chapter}/", (string book, string chapter) => $"unhighlighted {book}:{chapter}");
-            app.MapGet("/", () => "Hello Status!");
+            app.MapGet("/", () => "Hello AV-Bible user!\nFramework Version: " + Pinshot_RustFFI.VERSION);
 
             ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
 
+#if DEBUG
             app.Run("http://localhost:1769");
+#else
+            app.Run();
+#endif
         }
     }
 }
