@@ -1,9 +1,12 @@
+using AVXFramework;
 using Blueprint.Model.Implicit;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Pinshot.Blue;
+using System.IO;
 using System.Net;
 using static Blueprint.Model.Implicit.QFormat;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace AVAPI
 {
@@ -80,6 +83,36 @@ namespace AVAPI
 
 
             app.MapGet("/{book}/{chapter}/", (string book, string chapter) => $"unhighlighted {book}:{chapter}");
+            app.MapGet("/help/diagrams/{image}.png", (string image) =>
+            {
+                var path = Path.Combine(AVEngine.HelpFolder, "diagrams", $"{image}.png");
+                return Results.File(path, contentType: "image/png");
+            });
+            app.MapGet("/help/css/{style}.css", (string style) =>
+            {
+                var path = Path.Combine(AVEngine.HelpFolder, "css", $"{style}.css");
+                return Results.File(path, contentType: "text/css");
+            });
+            app.MapGet("/help/html-generator/{js}.js", (string js) =>
+            {
+                var path = Path.Combine(AVEngine.HelpFolder, "html-generator", $"{js}.js");
+                return Results.File(path, contentType: "text/javascript");
+            });
+            app.MapGet("/help/{help}.html", (string help) =>
+            {
+                var path = Path.Combine(AVEngine.HelpFolder, $"{help}.html");
+                return Results.File(path, contentType: "text/html");
+            });
+            app.MapGet("/help/{help}", (string help) =>
+            {
+                var path = AVEngine.GetHelpFile(help);
+                return Results.File(path, contentType: "text/html");
+            });
+            app.MapGet("/help", () =>
+            {
+                var path = AVEngine.GetHelpFile("index.html");
+                return Results.File(path, contentType: "text/html");
+            });
             app.MapGet("/", () => "Hello AV-Bible user!\nFramework Version: " + Pinshot_RustFFI.VERSION);
 
             ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };

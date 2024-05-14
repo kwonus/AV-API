@@ -69,7 +69,6 @@
                 values[i++] = v;
             }
             MemoryStream payload = new(values);
-
             return payload;
         }
         public Stream Detail_Find(string format, string spec, string book, string chapter, out string message, bool quoted = false, bool context = false)
@@ -169,7 +168,6 @@
                     goto DONE;
                 }
             }
-        EMPTY:
             message = "Search specification was empty";
         DONE:
             return matches;
