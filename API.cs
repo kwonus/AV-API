@@ -1,4 +1,5 @@
 using AVXFramework;
+using Blueprint.Blue;
 using Blueprint.Model.Implicit;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -21,6 +22,7 @@ namespace AVAPI
         private API()
         {
             this.engine = new(API.api);
+            QContext.Home = Directory.GetCurrentDirectory();
         }
         public static void Main(string[] args)
         {
