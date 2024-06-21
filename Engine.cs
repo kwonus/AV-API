@@ -2,6 +2,7 @@
 {
     using AVSearch.Model.Results;
     using AVXFramework;
+    using AVXLib.Memory;
     using System;
     using System.Collections.Generic;
     using System.IO;
@@ -25,8 +26,7 @@
         {
             StringBuilder payload = new(2048);
             HashSet<UInt32> coordinates = this.Find(spec, out message, quoted);
-            UInt32 len = (UInt32)coordinates.Count;
-            payload.Append(len.ToString("X8"));
+
 
             UInt32 book_chapter = 0;
             foreach (UInt32 bcv in from coord in coordinates orderby coord ascending select coord)
@@ -34,9 +34,9 @@
                 UInt32 bc = (UInt32)(bcv & 0xFFFF00);
                 if (bc != book_chapter)
                 {
-                    book_chapter = bc;
                     if (book_chapter > 0)
                         payload.AppendLine();
+                    book_chapter = bc;
                 }
                 else
                 {
@@ -44,21 +44,19 @@
                 }
                 payload.Append(bcv.ToString("X6"));
             }
+            if (book_chapter > 0)
+                payload.AppendLine();
+            payload.Append(0.ToString("X6"));   // null-terminate
             return payload;
         }
         public Stream Binary_Find(string spec, out string message, bool quoted = false)
         {
             HashSet<UInt32> coordinates = this.Find(spec, out message, quoted);
             UInt32 len = (UInt32) coordinates.Count;
-            byte[] lenBytes = BitConverter.GetBytes(len);
 
-            byte[] values = new byte[lenBytes.Length + (coordinates.Count * 3)];
+            byte[] values = new byte[(1+len) * 3];
             int i = 0;
-            foreach (byte b in lenBytes)
-            {
-                values[i] = lenBytes[i];
-                i++;
-            }
+
             foreach (UInt32 bcv in from coord in coordinates orderby coord ascending select coord)
             {
                 byte b = (byte) (bcv >> 16);
@@ -68,6 +66,9 @@
                 values[i++] = c;
                 values[i++] = v;
             }
+            values[i++] = 0;
+            values[i++] = 0;
+            values[i++] = 0;
             MemoryStream payload = new(values);
             return payload;
         }
@@ -130,8 +131,8 @@
                     {
                         foreach (var match in book.Matches.Values)
                         {
-                            UInt32 start = match.Start.elements >> 8;
-                            UInt32 until = match.Until.elements >> 8;
+                            UInt32 start = match.Start.AsUInt32() >> 8;
+                            UInt32 until = match.Until.AsUInt32() >> 8;
                             if (!matches.Contains(start))
                             {
                                 matches.Add(start);
