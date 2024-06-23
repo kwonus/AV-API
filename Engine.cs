@@ -22,6 +22,35 @@
         {
             ;
         }
+        // TOTO: TO DO: BUG: Scope-Only selection statements are NOT returning any results
+        public Stream Get_Chapter(string format, string book, string chapter, out string message, bool context = false)
+        {
+            string op = context ? " :: " : " := ";
+            //string input = "<" + book + " " + chapter + op + format;  //  "*" is a hack-workaround to mask bug in scope-only selection statements
+            string input = "* <" + book + " " + chapter + op + format;  //  "*" is a hack-workaround to mask bug in scope-only selection statements
+
+            message = "ok";
+            input = HttpUtility.UrlDecode(input).Replace('_', ' ');
+            //string normalized = this.Normalize(input);
+            var tuple = this.Execute(input);
+
+            if (!tuple.message.Equals("ok"))
+            {
+                message = tuple.message;
+            }
+            else if (tuple.stmt != null && tuple.stmt.Commands != null && tuple.stmt.Commands.Context != null)
+            {
+                tuple.stmt.Commands.Context.InternalExportStream.Position = 0;
+                return tuple.stmt.Commands.Context.InternalExportStream;
+            }
+            else
+            {
+                message = "Unexpected status during export stream generation";
+            }
+
+            return new MemoryStream();
+        }
+
         public StringBuilder Debug_Find(string spec, out string message, bool quoted = false)
         {
             StringBuilder payload = new(2048);

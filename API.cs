@@ -43,21 +43,29 @@ namespace AVAPI
             string html = "text/html; charset=utf-8";
             string mkdn = "text/markdown; charset=utf-8";
 
+            app.MapGet("/{book}/{chapter}.yml", (string book, string chapter)
+                => Results.Stream(API.api.engine.Get_Chapter(nameof(QFormatVal.YAML), book, chapter, out message), yaml));
             app.MapGet("/{book}/{chapter}/find/{spec}.yml", (string book, string chapter, string spec)
                 => Results.Stream(API.api.engine.Detail_Find(nameof(QFormatVal.YAML), spec, book, chapter, out message), yaml));
             app.MapGet("/{book}/{chapter}/find-quoted/{spec}.yml", (string book, string chapter, string spec)
                 => Results.Stream(API.api.engine.Detail_Find(nameof(QFormatVal.YAML), spec, book, chapter, out message, quoted: true), yaml));
 
+            app.MapGet("/{book}/{chapter}.txt", (string book, string chapter)
+                => Results.Stream(API.api.engine.Get_Chapter(nameof(QFormatVal.TEXT), book, chapter, out message), text));
             app.MapGet("/{book}/{chapter}/find/{spec}.txt", (string book, string chapter, string spec)
                 => Results.Stream(API.api.engine.Detail_Find(nameof(QFormatVal.TEXT), spec, book, chapter, out message), text));
             app.MapGet("/{book}/{chapter}/find-quoted/{spec}.txt", (string book, string chapter, string spec)
                 => Results.Stream(API.api.engine.Detail_Find(nameof(QFormatVal.TEXT), spec, book, chapter, out message, quoted: true), text));
 
+            app.MapGet("/{book}/{chapter}.html", (string book, string chapter)
+                => Results.Stream(API.api.engine.Get_Chapter(nameof(QFormatVal.HTML), book, chapter, out message), html));
             app.MapGet("/{book}/{chapter}/find/{spec}.html", (string book, string chapter, string spec)
                 => Results.Stream(API.api.engine.Detail_Find(nameof(QFormatVal.HTML), spec, book, chapter, out message), html));
             app.MapGet("/{book}/{chapter}/find-quoted/{spec}.html", (string book, string chapter, string spec)
                 => Results.Stream(API.api.engine.Detail_Find(nameof(QFormatVal.HTML), spec, book, chapter, out message, quoted: true), html));
 
+            app.MapGet("/{book}/{chapter}/.md", (string book, string chapter)
+                => Results.Stream(API.api.engine.Get_Chapter(nameof(QFormatVal.MD), book, chapter, out message), mkdn));
             app.MapGet("/{book}/{chapter}/find/{spec}.md", (string book, string chapter, string spec)
                 => Results.Stream(API.api.engine.Detail_Find(nameof(QFormatVal.MD), spec, book, chapter, out message), mkdn));
             app.MapGet("/{book}/{chapter}/find-quoted/{spec}.md", (string book, string chapter, string spec)
