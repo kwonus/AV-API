@@ -26,10 +26,29 @@ namespace AVAPI
         }
         public static void Main(string[] args)
         {
+            string yaml = "text/x-yaml; charset=utf-8";
+            string text = "text/plain; charset=utf-8";
+            string html = "text/html; charset=utf-8";
+            string mkdn = "text/markdown; charset=utf-8";
+
+            // NOTE:
+            // Unlike inproc library, the API has not concept of non-persistent settings.
+            // If a setting is passed in, it is explictly saved.
+
             string message = string.Empty;
 
             var builder = WebApplication.CreateBuilder(args);
             var app = builder.Build();
+
+            app.MapGet("/settings.yml", () => API.api.engine.Get_Settings());
+
+            app.MapGet("/settings/span",    (uint value)   => API.api.engine.Update_Settings("span", value.ToString()));
+            app.MapGet("/settings/word",    (string value) => API.api.engine.Update_Settings("word", value));
+            app.MapGet("/settings/lemma",   (string value) => API.api.engine.Update_Settings("lemma", value));
+            app.MapGet("/settings/lexicon", (string value) => API.api.engine.Update_Settings("lexicon", value));
+            app.MapGet("/settings/search",  (string value) => API.api.engine.Update_Settings("lexicon", value));
+            app.MapGet("/settings/render",  (string value) => API.api.engine.Update_Settings("render", value));
+            app.MapGet("/settings/format",  (string value) => API.api.engine.Update_Settings("format", value));
 
             app.MapGet("/debug/find/{spec}", (string spec) => API.api.engine.Debug_Find(spec, out message, quoted: false).ToString());
             app.MapGet("/debug/find-quoted/{spec}", (string spec) => API.api.engine.Debug_Find(spec, out message, quoted: true).ToString());
@@ -37,11 +56,6 @@ namespace AVAPI
             string binary = "application/octet-stream";
             app.MapGet("/find/{spec}", (string spec) => Results.Stream(API.api.engine.Binary_Find(spec, out message, quoted: false), binary));
             app.MapGet("/find-quoted/{spec}", (string spec) => Results.Stream(API.api.engine.Binary_Find(spec, out message, quoted: true), binary));
-
-            string yaml = "text/x-yaml; charset=utf-8";
-            string text = "text/plain; charset=utf-8";
-            string html = "text/html; charset=utf-8";
-            string mkdn = "text/markdown; charset=utf-8";
 
             app.MapGet("/{book}/{chapter}.yml", (string book, string chapter)
                 => Results.Stream(API.api.engine.Get_Chapter(nameof(QFormatVal.YAML), book, chapter, out message), yaml));

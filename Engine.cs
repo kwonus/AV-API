@@ -3,12 +3,14 @@
     using AVSearch.Model.Results;
     using AVXFramework;
     using AVXLib.Memory;
+    using Blueprint.Blue;
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Text;
     using System.Web;
+    using YamlDotNet.Core.Tokens;
     using static Blueprint.Model.Implicit.QFormat;
 
     public class Engine: AVEngine
@@ -21,6 +23,58 @@
         Engine()
         {
             ;
+        }
+        public string GetSettingsAsReturnString(QSettings settings)
+        {
+            var yaml = settings.AsYaml();
+            StringBuilder lines = new StringBuilder();
+            HashSet<string> dedup = new();
+            foreach (var line in yaml)
+                if (!dedup.Contains(line))
+                {
+                    lines.AppendLine(line);
+                    dedup.Add(line);
+                }
+
+            return lines.ToString();
+        }
+        public string Get_Settings()
+        {
+            QSettings settings = new QSettings(QContext.SettingsFile);
+
+            return GetSettingsAsReturnString(settings);
+        }
+        public string Update_Settings(string key, string value)
+        {
+            QSettings settings = new QSettings(QContext.SettingsFile);
+            switch (key.ToLower())
+            {
+                case "span":            settings.Span = new Blueprint.Model.Implicit.QSpan(value);
+                                        break;
+
+                case "lexicon.search":
+                case "search":
+                case "lexicon":         settings.Lexicon.Domain = new Blueprint.Model.Implicit.QLexicalDomain(value);
+                                        break;
+
+                case "lexicon.render":
+                case "render":          settings.Lexicon.Render = new Blueprint.Model.Implicit.QLexicalDisplay(value);
+                                        break;
+
+                case "similarity.word":
+                case "word":            settings.Similarity.Word = new Blueprint.Model.Implicit.QSimilarityWord(value);
+                                        break;
+
+                case "similarity.lemma:":
+                case "lemma":           settings.Similarity.Lemma = new Blueprint.Model.Implicit.QSimilarityLemma(value);
+                                        break;
+
+                case "format:":         settings.Format = new Blueprint.Model.Implicit.QFormat(value);
+                                        break;
+            }
+            settings.Update();
+
+            return GetSettingsAsReturnString(settings);
         }
         // TOTO: TO DO: BUG: Scope-Only selection statements are NOT returning any results
         public Stream Get_Chapter(string format, string book, string chapter, out string message, bool context = false)
