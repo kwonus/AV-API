@@ -4,6 +4,7 @@
     using AVXFramework;
     using AVXLib.Memory;
     using Blueprint.Blue;
+    using Pinshot.Blue;
     using System;
     using System.Collections.Generic;
     using System.IO;
@@ -37,6 +38,10 @@
                 }
 
             return lines.ToString();
+        }
+        public string Get_Revision()
+        {
+            return "revision: " + Pinshot_RustFFI.VERSION;
         }
         public string Get_Settings()
         {

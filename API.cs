@@ -10,6 +10,7 @@ using System.IO;
 using System.Net;
 using System.Reflection.PortableExecutable;
 using System.Runtime.InteropServices;
+using YamlDotNet.Core.Tokens;
 using static Blueprint.Model.Implicit.QFormat;
 using static System.Net.Mime.MediaTypeNames;
 
@@ -30,16 +31,6 @@ namespace AVAPI
             QContext.Home = Directory.GetCurrentDirectory();
         }
 
-        [DllImport("user32.dll", SetLastError = true)]
-        static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
-
-
-        [DllImport("user32.dll")]
-        static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
-
-        const int SW_HIDE = 0;
-        const int SW_SHOW = 5;
-
         protected override bool Launch(string url)
         {
             string yaml = "text/x-yaml; charset=utf-8";
@@ -51,10 +42,10 @@ namespace AVAPI
 
             try
             {
-
                 var builder = WebApplication.CreateBuilder();
                 this.App = builder.Build();
 
+                this.App.MapGet("/revision.yml", () => API.api.engine.Get_Revision());
                 this.App.MapGet("/settings.yml", () => API.api.engine.Get_Settings());
 
                 this.App.MapGet("/settings/span", (uint value) => API.api.engine.Update_Settings("span", value.ToString()));
