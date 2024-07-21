@@ -28,7 +28,6 @@ namespace AVAPI
         public API()
         {
             this.engine = new(API.api);
-            QContext.Home = Directory.GetCurrentDirectory();
         }
 
         protected override bool Launch(string url)
