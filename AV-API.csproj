@@ -27,7 +27,7 @@
     </EmbeddedResource>
   </ItemGroup>
 
-  <ItemGroup>
+  <!--ItemGroup>
     <None Update="Data\AVX-Omega.data">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -40,6 +40,6 @@
     <None Update="Data\en_US.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
+  </ItemGroup-->
 
 </Project>
