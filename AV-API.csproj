@@ -5,6 +5,8 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <RootNamespace>AVAPI</RootNamespace>
     <PlatformTarget>x64</PlatformTarget>
+    <PublishAot>true</PublishAot>
+    <IsTrimmable>true</IsTrimmable>
     <OutputType>Library</OutputType>
   </PropertyGroup>
 

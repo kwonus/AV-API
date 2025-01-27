@@ -10,6 +10,7 @@ using System.IO;
 using System.Net;
 using System.Reflection.PortableExecutable;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using YamlDotNet.Core.Tokens;
 using static Blueprint.Model.Implicit.QFormat;
 using static System.Net.Mime.MediaTypeNames;
@@ -21,6 +22,29 @@ namespace AVAPI
         private static API api;
         internal Engine engine;
 
+#if EXPERIMENTAL // failure
+        [UnmanagedCallersOnly(EntryPoint = "start")]
+        public static UInt32 start()
+        {
+            bool result = API.api.Launch();
+            return result ? (UInt32) 0 :(UInt32) 0xFFFF;
+        }
+        [UnmanagedCallersOnly(EntryPoint = "stop")]
+        public static UInt32 stop()
+        {
+            try
+            {
+                Task task = API.api.Stop();
+                bool result = task.Wait(5000);
+                return result ? (UInt32)0 : (UInt32)0xEEEE;
+            }
+            catch
+            {
+                ;
+            }
+            return 0xFFFF;
+        }
+#endif
         static API()
         {
             API.api = new();
@@ -30,7 +54,7 @@ namespace AVAPI
             this.engine = new(API.api);
         }
 
-        protected override bool Launch(string url)
+        protected override bool Launch()
         {
             string yaml = "text/x-yaml; charset=utf-8";
             string text = "text/plain; charset=utf-8";
@@ -110,7 +134,6 @@ namespace AVAPI
                 this.App.MapGet("/{book}/{chapter}/context-find-quoted/{spec}.md", (string book, string chapter, string spec)
                     => Results.Stream(API.api.engine.Detail_Find(nameof(QFormatVal.MD), spec, book, chapter, out message, context: true, quoted: true), mkdn));
 
-
                 this.App.MapGet("/{book}/{chapter}/", (string book, string chapter) => $"unhighlighted {book}:{chapter}");
                 this.App.MapGet("/help/diagrams/{image}.png", (string image) =>
                 {
@@ -143,6 +166,12 @@ namespace AVAPI
                     return Results.File(path, contentType: "text/html");
                 });
                 this.App.MapGet("/", () => "Hello AV-Bible user!\nAV-Engine Version: " + Pinshot_RustFFI.VERSION);
+
+                this.App.MapPost("/merge/history", ()
+                    => Results.Stream(API.api.engine.Detail_Find(nameof(QFormatVal.MD), "foo", "ge", "1", out message)));
+                this.App.MapPost("/merge/macros", ()
+                    => Results.Stream(API.api.engine.Detail_Find(nameof(QFormatVal.MD), "foo", "ge", "1", out message)));
+
 
                 ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
 

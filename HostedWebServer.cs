@@ -35,7 +35,7 @@ namespace AVAPI
         /// <param name="url">startup url</param>
         /// <param name="webRootPath">An optional path for static file locations. If not specified uses entry assembly location</param>
         /// <returns></returns>
-        protected abstract bool Launch(string url);
+        protected abstract bool Launch();
 
         /// <summary>
         /// Launches the Web Server in the background so you can continue
@@ -44,9 +44,9 @@ namespace AVAPI
         /// </summary>
         /// <param name="url">tartup url</param>
         /// <param name="webRootPath"></param>
-        public async Task<bool> LaunchAsync(string url = "http://localhost:1769")
+        public async Task<bool> LaunchAsync()
         {
-            return await Task.Run(() => Launch(url));
+            return await Task.Run(() => Launch());
         }
 
 
