@@ -3,6 +3,7 @@ using Blueprint.Blue;
 using Blueprint.Model.Implicit;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Routing;
 using Pinshot.Blue;
 using System;
@@ -167,11 +168,77 @@ namespace AVAPI
                 });
                 this.App.MapGet("/", () => "Hello AV-Bible user!\nAV-Engine Version: " + Pinshot_RustFFI.VERSION);
 
-                this.App.MapPost("/merge/history", ()
-                    => Results.Stream(API.api.engine.Detail_Find(nameof(QFormatVal.MD), "foo", "ge", "1", out message)));
-                this.App.MapPost("/merge/macros", ()
-                    => Results.Stream(API.api.engine.Detail_Find(nameof(QFormatVal.MD), "foo", "ge", "1", out message)));
+                this.App.MapPost("/backup/history", async (HttpContext context) =>
+                {
+                    (string folder, string file) components = QContext.BackupHistoryPath;
+                    string pathname = RevisionFileFunction(components.folder, components.file);
 
+                    using (var memoryStream = new MemoryStream())
+                    {
+                        await context.Request.Body.CopyToAsync(memoryStream);
+                        memoryStream.Position = 0;
+
+                        if (memoryStream.Length <= 512 * 1024 * 1024) // must be <= 512mb
+                        {
+                            using (var fileStream = new FileStream(pathname, FileMode.Create, FileAccess.Write))
+                            {
+                                await memoryStream.CopyToAsync(fileStream);
+                            }
+                        }
+
+                        // Return a success response
+                        return Results.Ok("History backup saved successfully.");
+                    }
+                });
+                this.App.MapPost("/backup/macros", async (HttpContext context) =>
+                {
+                    (string folder, string file) components = QContext.BackupMacrosPath;
+                    string pathname = RevisionFileFunction(components.folder, components.file);
+
+                    using (var memoryStream = new MemoryStream())
+                    {
+                        await context.Request.Body.CopyToAsync(memoryStream);
+                        memoryStream.Position = 0;
+
+                        if (memoryStream.Length <= 512 * 1024 * 1024) // must be <= 512mb
+                        {
+                            using (var fileStream = new FileStream(pathname, FileMode.Create, FileAccess.Write))
+                            {
+                                await memoryStream.CopyToAsync(fileStream);
+                            }
+                        }
+
+                        // Return a success response
+                        return Results.Ok("Macros backup saved successfully.");
+                    }
+                });
+                this.App.MapPost("/backup/settings", async (HttpContext context) =>
+                {
+                    using (var memoryStream = new MemoryStream())
+                    {
+                        QSettings settings = new QSettings(QContext.SettingsFile);
+
+                        await context.Request.Body.CopyToAsync(memoryStream);
+                        memoryStream.Position = 0;
+
+                        if (memoryStream.Length <= 1 * 1024) // must be <= 1mb
+                        {
+
+                            using (var input = new StreamReader(memoryStream))
+                            {
+                                bool ok = settings.Reload(input);
+
+                                return ok
+                                    ? Results.Ok("Settings saved successfully.")
+                                    : Results.Ok("API was successful, but error encountered attempting to save settings.");
+                            }
+                        }
+                        else
+                        {
+                            return Results.Ok("An unreasonable amount of data was attempted by the request.");
+                        }
+                    }
+                });
 
                 ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
 
@@ -187,6 +254,11 @@ namespace AVAPI
                 this.IsRunning = false;
             }
             return false;
+        }
+        private string RevisionFileFunction(string folder, string file)
+        {
+            // TO DO: Revision previous files with revisions by using a timestamp suffix
+            return Path.Combine(folder, file);
         }
     }
 }
