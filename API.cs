@@ -136,6 +136,7 @@ namespace AVAPI
                     => Results.Stream(API.api.engine.Detail_Find(nameof(QFormatVal.MD), spec, book, chapter, out message, context: true, quoted: true), mkdn));
 
                 this.App.MapGet("/{book}/{chapter}/", (string book, string chapter) => $"unhighlighted {book}:{chapter}");
+#if OBSOLETE_FILE_BASED_HELP
                 this.App.MapGet("/help/diagrams/{image}.png", (string image) =>
                 {
                     var path = Path.Combine(AVEngine.HelpFolder, "diagrams", $"{image}.png");
@@ -166,6 +167,7 @@ namespace AVAPI
                     var path = AVEngine.GetHelpFile("index.html");
                     return Results.File(path, contentType: "text/html");
                 });
+#endif
                 this.App.MapGet("/", () => "Hello AV-Bible user!\nAV-Engine Version: " + Pinshot_RustFFI.VERSION);
 
                 this.App.MapPost("/backup/history", async (HttpContext context) =>
